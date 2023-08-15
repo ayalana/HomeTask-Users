@@ -6,12 +6,10 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 HttpClient client = new HttpClient();
 Console.WriteLine("Enter the path to the folder where the file will be stored:");
 string folderPath = Console.ReadLine();
-
 Console.WriteLine("Enter the desired file format (JSON or CSV):");
 string fileFormat = Console.ReadLine();
 var dataRetriever = new DataRetriever();
 var users = await dataRetriever.GetUsers();
-
 if (users.Count > 0)
 {
     string filePath = Path.Combine(folderPath, $"users.{fileFormat.ToLower()}");
