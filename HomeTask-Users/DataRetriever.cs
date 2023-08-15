@@ -3,6 +3,7 @@
 
 namespace HomeTask_Users
 {
+    [Obsolete]
     internal class DataRetriever
     {
         private HttpClient _httpClient;
