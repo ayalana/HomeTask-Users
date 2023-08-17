@@ -8,14 +8,15 @@ using System.Threading.Tasks;
 
 namespace HomeTask_Users.Adapters.RandomuserAdapter.Mappers
 {
-    internal static class UsserMapper
+    internal static class UserMapper
     {
         internal static List<User> Map(this RandomuserAdapter.Entities.Users users) 
         {
-            return users.Property1.Select(u => new User
+
+            return users.results.Select(u => new User
             {
-                FirstName = u.name,
-                LastName = u.name,
+                FirstName = u.name.first,
+                LastName = u.name.last,
                 Email = u.email,
                 SourceId = 1
             }).ToList();

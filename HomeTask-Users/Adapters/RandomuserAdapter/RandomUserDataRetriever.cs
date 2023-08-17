@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HomeTask_Users.Adapters.RandomuserAdapter
 {
-    internal class DataRetriever : BaseDataRetriever
+    internal class RandomUserDataRetriever : BaseDataRetriever
     {
         public override string SourceUrl { get; set; } = "https://randomuser.me/api/";
 
@@ -18,5 +18,6 @@ namespace HomeTask_Users.Adapters.RandomuserAdapter
 
             return users;
         }
+
     }
 }

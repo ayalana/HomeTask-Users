@@ -1,46 +1,41 @@
-﻿
-using HomeTask_Users;
+﻿using HomeTask_Users;
+using HomeTask_Users.Adapters.DummyJsonAdapter;
+using HomeTask_Users.Adapters.RandomuserAdapter;
+using HomeTask_Users.Adapters.ReqResAdapter;
 
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
-HttpClient client = new HttpClient();
 Console.WriteLine("Enter the path to the folder where the file will be stored:");
 string folderPath = Console.ReadLine();
 Console.WriteLine("Enter the desired file format (JSON or CSV):");
 string fileFormat = Console.ReadLine();
-var dataRetriever = new DataRetriever();
-var users = await dataRetriever.GetUsers();
-if (users.Count > 0)
+
+
+string filePath = Path.Combine(folderPath, $"users.{fileFormat.ToLower()}");
+IUserExporter userExporter=null;
+if (fileFormat.ToLower() == "csv")
 {
-    string filePath = Path.Combine(folderPath, $"users.{fileFormat.ToLower()}");
-
-    switch (fileFormat.ToLower())
-    {
-        case "json":
-            string json = JsonSerializer.Serialize(users);
-            File.WriteAllText(filePath, json);
-            break;
-
-        case "csv":
-            using (var writer = new StreamWriter(filePath))
-            using (var csv = new CsvHelper.CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
-            {
-                csv.WriteRecords(users);
-            }
-            break;
-
-        default:
-            Console.WriteLine("Invalid file format specified.");
-            break;
-    }
-
-    Console.WriteLine($"Users data saved to {filePath}.");
-    Console.WriteLine($"Total number of users: {users.Count}");
+    userExporter = new CsvUserExporter();
 }
-else
+else if (fileFormat.ToLower() == "json")
 {
-    Console.WriteLine("No users data found.");
+    userExporter = new JsonUserExporter();
 }
 
 
 
+var randomUser = new RandomUserDataRetriever();
+var reqRes = new ReqResDataRetriever();
+var dummyJson = new DummyJsonRetriever();
+
+Task<List<User>> randomUserTask = randomUser.GetUsers();
+Task<List<User>> reqResTask = reqRes.GetUsers();
+Task<List<User>> dummyJsonTask = dummyJson.GetUsers();
+
+await Task.WhenAll(randomUserTask, reqResTask,dummyJsonTask);
+
+var combinedList = new List<User>();
+combinedList.AddRange(randomUserTask.Result);
+combinedList.AddRange(reqResTask.Result);
+combinedList.AddRange(dummyJsonTask.Result);
+
+File.WriteAllText(filePath, userExporter.ExportData(combinedList));

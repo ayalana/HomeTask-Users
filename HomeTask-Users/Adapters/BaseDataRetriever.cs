@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CsvHelper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace HomeTask_Users.Adapters
 {
     internal abstract class BaseDataRetriever
     {
+
         private HttpClient httpClient = new HttpClient();
         public abstract string SourceUrl { get; set; }
 
@@ -27,5 +29,7 @@ namespace HomeTask_Users.Adapters
 
             return default;
         }
+
+
     }
 }

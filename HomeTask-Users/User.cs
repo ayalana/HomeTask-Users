@@ -39,10 +39,5 @@ namespace HomeTask_Users
             get { return sourceId; }
             set { sourceId = value; }
         }
-        //public string FirstName { get; set; }
-        //public string LastName { get; set; }
-        //public string Email { get; set; }
-        //public int SourceId { get; set; }
-
     }
 }

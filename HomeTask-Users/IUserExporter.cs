@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace HomeTask_Users
 {
-    internal interface IUser
+    internal interface IUserExporter
     {
-        Task<User> GetUser();
+        string ExportData<T>(T data);
+
     }
 }
