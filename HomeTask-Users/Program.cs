@@ -3,39 +3,65 @@ using HomeTask_Users.Adapters.DummyJsonAdapter;
 using HomeTask_Users.Adapters.RandomuserAdapter;
 using HomeTask_Users.Adapters.ReqResAdapter;
 
+await ExportUsersToFile();
 
-Console.WriteLine("Enter the path to the folder where the file will be stored:");
-string folderPath = Console.ReadLine();
-Console.WriteLine("Enter the desired file format (JSON or CSV):");
-string fileFormat = Console.ReadLine();
-
-
-string filePath = Path.Combine(folderPath, $"users.{fileFormat.ToLower()}");
-IUserExporter userExporter=null;
-if (fileFormat.ToLower() == "csv")
+async Task ExportUsersToFile()
 {
-    userExporter = new CsvUserExporter();
-}
-else if (fileFormat.ToLower() == "json")
-{
-    userExporter = new JsonUserExporter();
+    string folderPath = GetFolderPath();
+    string fileFormat = GetFileFormat();
+
+    string filePath = Path.Combine(folderPath, $"users.{fileFormat.ToLower()}");
+    IUserExporter userExporter = GetUserExporter(fileFormat);
+
+    List<User> combinedList = await GetCombinedUserList();
+
+    File.WriteAllText(filePath, userExporter.ExportData(combinedList));
 }
 
+string GetFolderPath()
+{
+    Console.WriteLine("Enter the path to the folder where the file will be stored:");
+    return Console.ReadLine();
+}
 
+string GetFileFormat()
+{
+    Console.WriteLine("Enter the desired file format (JSON or CSV):");
+    return Console.ReadLine();
+}
 
-var randomUser = new RandomUserDataRetriever();
-var reqRes = new ReqResDataRetriever();
-var dummyJson = new DummyJsonRetriever();
+IUserExporter GetUserExporter(string fileFormat)
+{
+    if (fileFormat.ToLower() == "csv")
+    {
+        return new CsvUserExporter();
+    }
+    else if (fileFormat.ToLower() == "json")
+    {
+        return new JsonUserExporter();
+    }
+    else
+    {
+        throw new ArgumentException("Invalid file format. Please enter 'JSON' or 'CSV'.");
+    }
+}
 
-Task<List<User>> randomUserTask = randomUser.GetUsers();
-Task<List<User>> reqResTask = reqRes.GetUsers();
-Task<List<User>> dummyJsonTask = dummyJson.GetUsers();
+async Task<List<User>> GetCombinedUserList()
+{
+    var randomUser = new RandomUserDataRetriever();
+    var reqRes = new ReqResDataRetriever();
+    var dummyJson = new DummyJsonRetriever();
 
-await Task.WhenAll(randomUserTask, reqResTask,dummyJsonTask);
+    Task<List<User>> randomUserTask = randomUser.GetUsers();
+    Task<List<User>> reqResTask = reqRes.GetUsers();
+    Task<List<User>> dummyJsonTask = dummyJson.GetUsers();
 
-var combinedList = new List<User>();
-combinedList.AddRange(randomUserTask.Result);
-combinedList.AddRange(reqResTask.Result);
-combinedList.AddRange(dummyJsonTask.Result);
+    await Task.WhenAll(randomUserTask, reqResTask, dummyJsonTask);
 
-File.WriteAllText(filePath, userExporter.ExportData(combinedList));
+    var combinedList = new List<User>();
+    combinedList.AddRange(randomUserTask.Result);
+    combinedList.AddRange(reqResTask.Result);
+    combinedList.AddRange(dummyJsonTask.Result);
+
+    return combinedList;
+}
