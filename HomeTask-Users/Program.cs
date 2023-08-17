@@ -1,7 +1,15 @@
 ﻿using HomeTask_Users;
+using HomeTask_Users.Adapters;
 using HomeTask_Users.Adapters.DummyJsonAdapter;
 using HomeTask_Users.Adapters.RandomuserAdapter;
 using HomeTask_Users.Adapters.ReqResAdapter;
+
+List<BaseDataRetriever> adapters = new List<BaseDataRetriever>
+{
+    new RandomUserDataRetriever(),
+    new ReqResDataRetriever(),
+    new DummyJsonRetriever()
+};
 
 await ExportUsersToFile();
 
@@ -46,22 +54,13 @@ IUserExporter GetUserExporter(string fileFormat)
     }
 }
 
+
 async Task<List<User>> GetCombinedUserList()
 {
-    var randomUser = new RandomUserDataRetriever();
-    var reqRes = new ReqResDataRetriever();
-    var dummyJson = new DummyJsonRetriever();
-
-    Task<List<User>> randomUserTask = randomUser.GetUsers();
-    Task<List<User>> reqResTask = reqRes.GetUsers();
-    Task<List<User>> dummyJsonTask = dummyJson.GetUsers();
-
-    await Task.WhenAll(randomUserTask, reqResTask, dummyJsonTask);
-
     var combinedList = new List<User>();
-    combinedList.AddRange(randomUserTask.Result);
-    combinedList.AddRange(reqResTask.Result);
-    combinedList.AddRange(dummyJsonTask.Result);
+    var tasks = adapters.Select(async a => combinedList.AddRange(await a.GetUsers())).ToList();
+
+    await Task.WhenAll(tasks);
 
     return combinedList;
 }
